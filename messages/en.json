@@ -1,0 +1,96 @@
+{
+  "Index": {
+    "title": "Financial Engine",
+    "tabs": {
+      "investment": "Time Machine",
+      "converter": "Converter",
+      "calculator": "Calculator",
+      "tracker": "Tracker"
+    },
+    "headers": {
+      "investment": "What if you invested years ago?",
+      "converter": "Live Currency Conversion",
+      "calculator": "Digital Math Calculator",
+      "tracker": "Rate Tracker"
+    },
+    "descriptions": {
+      "investment": "Enter an amount, pick an asset, and travel back in time to see what your portfolio would look like today.",
+      "converter": "Check real-time exchange rates across major global currencies instantly.",
+      "calculator": "A lightning-fast native tool for your day-to-day arithmetic needs.",
+      "tracker": "Look up the price of any asset on any date — or compare two dates side by side."
+    },
+    "form": {
+      "amount": "Amount",
+      "investIn": "Invest In",
+      "date": "Date of Investment",
+      "from": "From",
+      "to": "To",
+      "asset": "Asset",
+      "targetCurrency": "Target Currency",
+      "date1": "Date 1",
+      "date2": "Date 2",
+      "optional": "(optional — for comparison)",
+      "required": "(required)",
+      "compareAll": "🌟 Compare All Assets",
+      "categories": {
+        "stocks": "📈 Stocks & Indices",
+        "crypto": "💰 Crypto",
+        "commodities": "🔱 Commodities",
+        "currencies": "💵 Currencies"
+      },
+      "assets": {
+        "sp500": "S&P 500 Index",
+        "bitcoin": "Bitcoin (BTC)",
+        "ethereum": "Ethereum (ETH)",
+        "solana": "Solana (SOL)",
+        "gold": "Gold (XAU)",
+        "currency_usd": "US Dollar (USD)",
+        "currency_eur": "Euro (EUR)",
+        "currency_gbp": "British Pound (GBP)",
+        "currency_sar": "Saudi Riyal (SAR)",
+        "currency_egp": "Egyptian Pound (EGP)"
+      }
+    },
+    "currencies": {
+      "usd": "US Dollar",
+      "sar": "Saudi Riyal",
+      "egp": "Egyptian Pound",
+      "eur": "Euro",
+      "gbp": "British Pound"
+    },
+    "metadata": {
+      "title": "Financial Engine - Investment & Asset Tracker",
+      "description": "Travel through time with your investments, convert currencies, and track asset rates live."
+    },
+    "buttons": {
+      "travel": "Travel Through Time",
+      "calculating": "Calculating",
+      "convert": "Convert",
+      "converting": "Converting",
+      "lookup": "Look Up Rates",
+      "lookingup": "Looking Up",
+      "swap": "Swap currencies"
+    },
+    "results": {
+      "error": "Calculation Error",
+      "placeholder": "Your time-travel results will appear here.",
+      "leaderboard": "Leaderboard Simulator",
+      "worth": "Your {amount} {currency} is now worth...",
+      "outdated": "Calculation outdated (click Travel Through Time)",
+      "roi": "ROI",
+      "unitsBought": "Units Purchased",
+      "unitsBoughtAlternative": "🛒 You Bought",
+      "pastPrice": "Price on {date}",
+      "currentPrice": "Current Price",
+      "initialValueUsd": "Initial Value (USD)",
+      "pastExchangeRate": "Exchange Rate Back Then",
+      "currentExchangeRate": "Exchange Rate Now",
+      "liveRate": "Live rate",
+      "worthAlternative": "💵 Those {currency} Are Now Worth",
+      "gain": "gain",
+      "loss": "loss",
+      "visualComparison": "🔍 Visual Comparison",
+      "priceDifference": "Price difference between dates"
+    }
+  }
+}

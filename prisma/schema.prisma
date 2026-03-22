@@ -1,0 +1,31 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model AssetPrice {
+  id        String   @id @default(cuid())
+  assetId   String   // e.g., "bitcoin", "aapl"
+  date      DateTime // The historical date
+  priceUsd  Float    // The price in USD on that date
+  createdAt DateTime @default(now())
+
+  @@unique([assetId, date])
+}
+
+model ExchangeRate {
+  id        String   @id @default(cuid())
+  currency  String   // e.g., "SAR", "EGP"
+  date      DateTime // The historical date
+  rateVsUsd Float    // The exchange rate against USD (1 USD = X Currency)
+  createdAt DateTime @default(now())
+
+  @@unique([currency, date])
+}
