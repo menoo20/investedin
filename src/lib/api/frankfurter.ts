@@ -54,22 +54,54 @@ function getHistoricalReferenceRate(currency: string, dateString: string): numbe
   return closestRate;
 }
 
-export async function getHistoricalExchangeRate(date: string, toCurrency: string): Promise<number | null> {
-  if (toCurrency === 'USD') return 1;
+export async function getHistoricalExchangeRate(dateString: string, toCurrency: string): Promise<number | null> {
+  const upper = toCurrency.toUpperCase();
+  if (upper === 'USD') return 1;
+  if (PEGGED_RATES[upper]) return PEGGED_RATES[upper];
+
+  const date = new Date(dateString);
+  const lookupDate = new Date(date);
+  lookupDate.setUTCHours(0, 0, 0, 0);
 
   try {
-    const response = await fetch(`https://api.frankfurter.app/${date}?from=USD&to=${toCurrency}`);
-    if (!response.ok) {
-      // Fallback if Frankfurter fails
-      const backupResponse = await fetch(`https://open.er-api.com/v6/latest/USD`);
-      const backupData = await backupResponse.json();
-      return backupData.rates?.[toCurrency] || null;
+    // 1. Check Cache
+    const cached = await prisma.exchangeRate.findUnique({
+      where: { currency_date: { currency: upper, date: lookupDate } }
+    });
+    if (cached) {
+      console.log(`[ExRate-DB] Cache hit: ${upper} on ${dateString} = ${cached.rateVsUsd}`);
+      return cached.rateVsUsd;
     }
 
-    const data = await response.json();
-    return data.rates?.[toCurrency] || null;
+    // 2. Try fallbacks
+    let rate: number | null = null;
+    
+    // Try Frankfurter
+    rate = await tryFrankfurterRate(upper, dateString);
+    
+    // Try Fawazahmed
+    if (rate === null) {
+      rate = await tryFawazahmed0Rate(upper, dateString);
+    }
+    
+    // Try Reference Table
+    if (rate === null) {
+      rate = getHistoricalReferenceRate(upper, dateString);
+    }
+
+    if (rate !== null) {
+      // 3. Save Cache
+      await prisma.exchangeRate.upsert({
+        where: { currency_date: { currency: upper, date: lookupDate } },
+        update: { rateVsUsd: rate },
+        create: { currency: upper, date: lookupDate, rateVsUsd: rate }
+      });
+      console.log(`[ExRate-API] Fetched & Cached ${upper} on ${dateString}: ${rate}`);
+    }
+
+    return rate;
   } catch (error) {
-    console.error(`[Exchange-API] Error fetching ${toCurrency} on ${date}:`, error);
+    console.error(`[ExRate-Service] Error for ${upper} on ${dateString}:`, error);
     return null;
   }
 }
@@ -96,9 +128,8 @@ async function tryFawazahmed0Rate(currency: string, dateString: string): Promise
     if (!response.ok) return null;
     const data = await response.json();
     const rate = data?.usd?.[currency.toLowerCase()];
-    if (!rate) return null;
-    console.log(`[ExRate-fawazahmed0] 1 USD = ${rate} ${currency} on ${dateString}`);
-    return rate;
+    if (rate) console.log(`[ExRate-fawazahmed0] 1 USD = ${rate} ${currency} on ${dateString}`);
+    return rate || null;
   } catch {
     return null;
   }
@@ -110,9 +141,8 @@ async function tryFrankfurterRate(currency: string, dateString: string): Promise
     if (!response.ok) return null;
     const data = await response.json();
     const rate = data?.rates?.[currency];
-    if (!rate) return null;
-    console.log(`[ExRate-Frankfurter] 1 USD = ${rate} ${currency} on ${dateString}`);
-    return rate;
+    if (rate) console.log(`[ExRate-Frankfurter] 1 USD = ${rate} ${currency} on ${dateString}`);
+    return rate || null;
   } catch {
     return null;
   }

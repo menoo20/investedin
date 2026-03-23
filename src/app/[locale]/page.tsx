@@ -444,37 +444,47 @@ export default function Home() {
                       <p className="text-neutral-400">{t("results.worth", { amount: submittedData.amount, currency: submittedData.currency })}</p>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <div className="ranking-container">
                       {[...result].sort((a, b) => b.roiPercentage - a.roiPercentage).map((item, index) => {
                         const isUp = item.roiPercentage >= 0;
                         const assetObj = assetGroups.flatMap(g => g.assets).find(a => a.id === item.assetId);
                         const name = assetObj ? assetObj.name : item.assetId;
+                        const rankNum = index + 1;
                         
                         return (
-                          <div key={item.assetId} className="relative overflow-hidden bg-neutral-900 border border-neutral-800 rounded-2xl p-5 shadow-xl hover:border-neutral-700 transition-all group">
-                            <div className={`absolute -right-10 -top-10 w-24 h-24 rounded-full blur-2xl opacity-10 group-hover:opacity-20 transition duration-500 ${isUp ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
-                            
-                            <div className="relative z-10 flex flex-col gap-3">
-                              <div className="flex justify-between items-start">
-                                <div className="flex items-center gap-2">
-                                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-neutral-800 font-bold text-neutral-400 text-xs border border-neutral-700">
-                                    #{index + 1}
-                                  </div>
-                                  <h3 className="font-bold text-white text-sm sm:text-base break-words leading-tight">{name}</h3>
-                                </div>
-                                <div className={`px-2 py-1 rounded-full text-xs font-bold ${isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-                                  {isUp ? '+' : ''}{item.roiPercentage.toFixed(2)}%
-                                </div>
+                          <div key={item.assetId} className={`ranking-row ${rankNum === 1 ? 'shine-effect ring-1 ring-amber-500/20' : ''}`}>
+                            {/* Rank Badge */}
+                            <div className={`rank-badge ${rankNum === 1 ? 'rank-1' : rankNum === 2 ? 'rank-2' : rankNum === 3 ? 'rank-3' : 'rank-default'}`}>
+                              {rankNum === 1 ? '1' : rankNum === 2 ? '2' : rankNum === 3 ? '3' : rankNum}
+                            </div>
+
+                            {/* Asset Info */}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-bold text-white truncate text-base sm:text-lg">{name}</h3>
+                              <p className="text-xs text-neutral-500 font-medium uppercase tracking-wider">{item.assetId}</p>
+                            </div>
+
+                            {/* ROI Badge */}
+                            <div className="hidden sm:block">
+                              <div className={`roi-badge ${isUp ? 'roi-up' : 'roi-down'}`}>
+                                {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                                {isUp ? '+' : ''}{item.roiPercentage.toFixed(2)}%
                               </div>
-                              
-                              <div>
-                                <p className="text-[10px] text-neutral-500 mb-1">Current Value</p>
-                                <div className="flex flex-col">
-                                  <span className="text-xs font-bold text-neutral-400 mb-1">{submittedData.currency}</span>
-                                  <span className="text-xl sm:text-2xl font-black text-white leading-none tracking-tighter break-words" title={`${submittedData.currency} ${new Intl.NumberFormat('en-US', { maximumFractionDigits: 6 }).format(item.currentValueLocal)}`}>
-                                    {new Intl.NumberFormat('en-US', { maximumFractionDigits: item.currentValueLocal > 1000 ? 2 : 6 }).format(item.currentValueLocal)}
-                                  </span>
-                                </div>
+                            </div>
+
+                            {/* Current Value */}
+                            <div className="text-right">
+                              <p className="text-[10px] text-neutral-500 mb-0.5 font-medium uppercase">{submittedData.currency}</p>
+                              <p className={`text-lg sm:text-xl font-black tracking-tight ${isUp ? 'text-white' : 'text-neutral-300'}`}>
+                                {new Intl.NumberFormat(locale, { 
+                                  minimumFractionDigits: 2, 
+                                  maximumFractionDigits: 2 
+                                }).format(item.currentValueLocal)}
+                              </p>
+                              <div className="sm:hidden mt-0.5">
+                                <span className={`text-[10px] font-bold ${isUp ? 'text-emerald-400' : 'text-red-400'}`}>
+                                  {isUp ? '+' : ''}{item.roiPercentage.toFixed(2)}%
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -486,7 +496,6 @@ export default function Home() {
                   <>
                 {/* Hero Result Card */}
                 <div className="relative overflow-hidden bg-neutral-900 border border-neutral-800 rounded-3xl p-8 shadow-2xl">
-                  {/* Glowing blobs inside card */}
                   <div className={`absolute -right-20 -top-20 w-64 h-64 rounded-full blur-3xl opacity-20 ${result.roiPercentage >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
                   
                   <div className="relative z-10 flex flex-col items-start gap-2">
@@ -495,7 +504,12 @@ export default function Home() {
                     </p>
                     <div className="flex items-end gap-3 flex-wrap">
                       <h2 className="text-6xl md:text-7xl font-black bg-clip-text text-transparent bg-gradient-to-br from-white to-neutral-400">
-                        {new Intl.NumberFormat(locale, { style: 'currency', currency: submittedData.currency, maximumFractionDigits: 0 }).format(result.currentValueLocal)} 
+                        {new Intl.NumberFormat(locale, { 
+                          style: 'currency', 
+                          currency: submittedData.currency, 
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2 
+                        }).format(result.currentValueLocal)} 
                       </h2>
                     </div>
                     
@@ -507,20 +521,18 @@ export default function Home() {
                 </div>
 
                 {/* Grid Stats */}
-                {submittedData.asset.startsWith('currency_') ? (
-                  /* Currency-specific results */
-                  (() => {
-                    const targetCurrency = submittedData.asset.replace('currency_', '').toUpperCase();
-                    return (
-                      <div className="space-y-4">
-                        {/* Exchange Rate Comparison */}
-                        <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {submittedData.asset.startsWith('currency_') ? (
+                    /* Currency-specific results */
+                    (() => {
+                      const targetCurrency = submittedData.asset.replace('currency_', '').toUpperCase();
+                      return (
+                        <>
                           <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6">
                             <p className="text-neutral-400 text-sm mb-1 font-medium">💰 {t("results.pastExchangeRate")}</p>
                             <p className="text-2xl font-bold text-white">
                               1 {targetCurrency} = {(result.pastAssetPriceUsd * result.pastExchangeRate).toFixed(2)} {submittedData.currency}
                             </p>
-                            <p className="text-neutral-500 text-xs mt-1">{t("results.pastPrice", { date: submittedData.date })}</p>
                           </div>
                           <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 relative">
                             <p className="text-neutral-400 text-sm mb-1 font-medium">📈 {t("results.currentExchangeRate")}</p>
@@ -528,62 +540,56 @@ export default function Home() {
                               1 {targetCurrency} = {(result.currentAssetPriceUsd * result.currentExchangeRate).toFixed(2)} {submittedData.currency}
                             </p>
                             <span className="absolute top-4 right-4 w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <p className="text-neutral-500 text-xs mt-1">{t("results.liveRate")}</p>
                           </div>
-                        </div>
-
-                        {/* What you got */}
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6">
+                          <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 font-bold">
                             <p className="text-neutral-400 text-sm mb-1 font-medium">{t("results.unitsBoughtAlternative")}</p>
-                            <p className="text-2xl font-bold text-white">
+                            <p className="text-2xl text-white">
                               {result.unitsBought.toFixed(2)} {targetCurrency}
                             </p>
-                            <p className="text-neutral-500 text-xs mt-1">{t("results.worth", { amount: submittedData.amount, currency: submittedData.currency })}</p>
                           </div>
                           <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6">
                             <p className="text-neutral-400 text-sm mb-1 font-medium">{t("results.worthAlternative", { currency: targetCurrency })}</p>
                             <p className="text-2xl font-bold text-white">
-                              {new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(result.currentValueLocal)} {submittedData.currency}
-                            </p>
-                            <p className={`text-xs mt-1 ${result.roiPercentage >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                              {result.roiPercentage > 0 ? '↑' : '↓'} {Math.abs(result.roiPercentage).toFixed(1)}% {result.roiPercentage >= 0 ? t("results.gain") : t("results.loss")}
+                              {new Intl.NumberFormat(locale, { 
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2 
+                              }).format(result.currentValueLocal)} {submittedData.currency}
                             </p>
                           </div>
-                        </div>
+                        </>
+                      );
+                    })()
+                  ) : (
+                    /* Standard asset results (crypto, gold, etc.) */
+                    <>
+                      <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6">
+                        <p className="text-neutral-400 text-sm mb-1 font-medium">🛒 {t("results.unitsBought")}</p>
+                        <p className="text-2xl font-bold text-white">
+                          {result.unitsBought.toFixed(2)} {submittedData.asset === 'gold' ? 'oz' : getAssetDisplayName(submittedData.asset).split('(')[1]?.replace(')', '') || submittedData.asset.toUpperCase()}
+                        </p>
                       </div>
-                    );
-                  })()
-                ) : (
-                  /* Standard asset results (crypto, gold, etc.) */
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6">
-                      <p className="text-neutral-400 text-sm mb-1 font-medium">🛒 {t("results.unitsBought")}</p>
-                      <p className="text-2xl font-bold text-white">
-                        {result.unitsBought < 0.01 ? result.unitsBought.toExponential(4) : result.unitsBought.toFixed(4)} {submittedData.asset === 'gold' ? 'oz' : getAssetDisplayName(submittedData.asset).split('(')[1]?.replace(')', '') || submittedData.asset.toUpperCase()}
-                      </p>
-                    </div>
-                    <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6">
-                      <p className="text-neutral-400 text-sm mb-1 font-medium">📅 {t("results.pastPrice", { date: submittedData.date })}</p>
-                      <p className="text-2xl font-bold text-white">
-                        {new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(result.pastAssetPriceUsd)}
-                      </p>
-                    </div>
-                    <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 relative">
-                      <p className="text-neutral-400 text-sm mb-1 font-medium">💹 {t("results.currentPrice")}</p>
-                      <p className="text-2xl font-bold text-white">
-                        {new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(result.currentAssetPriceUsd)}
-                      </p>
-                      <span className="absolute top-4 right-4 w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    </div>
-                    <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6">
-                      <p className="text-neutral-400 text-sm mb-1 font-medium">💵 {t("results.initialValueUsd")}</p>
-                      <p className="text-2xl font-bold text-white">
-                        {new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(result.initialInvestmentUsd)}
-                      </p>
-                    </div>
-                  </div>
-                )}
+                      <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6">
+                        <p className="text-neutral-400 text-sm mb-1 font-medium">📅 {t("results.pastPrice", { date: submittedData.date })}</p>
+                        <p className="text-2xl font-bold text-white">
+                          {new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(result.pastAssetPriceUsd)}
+                        </p>
+                      </div>
+                      <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 relative">
+                        <p className="text-neutral-400 text-sm mb-1 font-medium">💹 {t("results.currentPrice")}</p>
+                        <p className="text-2xl font-bold text-white">
+                          {new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD',  minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(result.currentAssetPriceUsd)}
+                        </p>
+                        <span className="absolute top-4 right-4 w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      </div>
+                      <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6">
+                        <p className="text-neutral-400 text-sm mb-1 font-medium">💵 {t("results.initialValueUsd")}</p>
+                        <p className="text-2xl font-bold text-white">
+                          {new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD',  minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(result.initialInvestmentUsd)}
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
                 </>
                 )}
               </div>

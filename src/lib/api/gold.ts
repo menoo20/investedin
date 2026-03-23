@@ -1,12 +1,39 @@
-export async function getHistoricalGoldPrice(dateString: string): Promise<number | null> {
-  const symbol = 'GC=F';
-  
-  try {
-    const date = new Date(dateString);
-    const startTs = Math.floor(date.getTime() / 1000);
-    const endTs = startTs + 86400 * 5; // Look ahead 5 days
+import prisma from '@/lib/prisma';
 
-    const url = `https://query2.finance.yahoo.com/v8/finance/chart/${symbol}?period1=${startTs}&period2=${endTs}&interval=1d`;
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 Hour
+
+export async function getHistoricalGoldPrice(dateString: string): Promise<number | null> {
+  const date = new Date(dateString);
+  const lookupDate = new Date(date);
+  lookupDate.setUTCHours(0, 0, 0, 0);
+
+  const isToday = lookupDate.getTime() === new Date().setUTCHours(0, 0, 0, 0);
+
+  try {
+    // 1. Check Cache
+    let cached = await prisma.assetPrice.findUnique({
+      where: { assetId_date: { assetId: 'gold', date: lookupDate } }
+    });
+
+    // 1-Hour TTL for "Today's" data
+    if (cached && isToday) {
+      const ageMs = Date.now() - cached.createdAt.getTime();
+      if (ageMs > CACHE_TTL_MS) {
+        console.log(`[Gold-DB] Today's cache is stale (${Math.round(ageMs/60000)}m old). Refreshing...`);
+        cached = null;
+      }
+    }
+
+    if (cached) {
+      console.log(`[Gold-DB] Cache hit for ${dateString}: $${cached.priceUsd}`);
+      return cached.priceUsd;
+    }
+
+    // 2. Fetch API (Yahoo Finance Gold Futures: GC=F)
+    const startTs = Math.floor(date.getTime() / 1000);
+    const endTs = startTs + 86400 * 5; 
+
+    const url = `https://query2.finance.yahoo.com/v8/finance/chart/GC=F?period1=${startTs}&period2=${endTs}&interval=1d`;
     
     const response = await fetch(url, {
       headers: { 'User-Agent': 'Mozilla/5.0' }
@@ -15,15 +42,20 @@ export async function getHistoricalGoldPrice(dateString: string): Promise<number
     if (!response.ok) return null;
 
     const data = await response.json();
-    const price = data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.[0];
+    const closePrice = data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.[0];
 
-    if (price) {
-      console.log(`[Gold-API] Fetched for ${dateString}: $${price}/oz`);
+    if (closePrice) {
+      // 3. Save Cache (Update createdAt to refresh TTL for today)
+      await prisma.assetPrice.upsert({
+        where: { assetId_date: { assetId: 'gold', date: lookupDate } },
+        update: { priceUsd: closePrice, createdAt: new Date() },
+        create: { assetId: 'gold', date: lookupDate, priceUsd: closePrice }
+      });
+      console.log(`[Gold-API] Fetched & Cached Gold for ${dateString}: $${closePrice}`);
     }
-    
-    return price || null;
+    return closePrice || null;
   } catch (error) {
-    console.error(`[Gold-API] Error for ${dateString}:`, error);
+    console.error(`[Gold-Service] Error for ${dateString}:`, error);
     return null;
   }
 }
@@ -35,11 +67,7 @@ export async function getCurrentGoldPrice(): Promise<number | null> {
     const startTs = endTs - 86400 * 7;
 
     const url = `https://query2.finance.yahoo.com/v8/finance/chart/${symbol}?period1=${startTs}&period2=${endTs}&interval=1d`;
-    
-    const response = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    });
-    
+    const response = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
     if (!response.ok) return null;
 
     const data = await response.json();
@@ -48,7 +76,7 @@ export async function getCurrentGoldPrice(): Promise<number | null> {
     
     for (let i = closePrices.length - 1; i >= 0; i--) {
       if (closePrices[i] !== null && closePrices[i] !== undefined) {
-        console.log(`[Gold-API] System-time price: $${closePrices[i]}/oz`);
+        console.log(`[Gold-API] Latest price: $${closePrices[i]}/oz`);
         return closePrices[i];
       }
     }

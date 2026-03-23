@@ -44,3 +44,89 @@ input[type="number"] {
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
+
+/* Ranking Table Styles */
+.ranking-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.ranking-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: rgba(23, 23, 23, 0.5);
+  border: 1px solid rgba(38, 38, 38, 0.5);
+  padding: 1rem;
+  border-radius: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ranking-row:hover {
+  background-color: rgba(38, 38, 38, 0.8);
+  border-color: rgba(64, 64, 64, 0.5);
+  transform: scale(1.01);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.rank-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  font-weight: 900;
+  font-size: 1.125rem;
+  border-width: 2px;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.rank-1 { background-color: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.5); color: rgba(245, 158, 11, 1); }
+.rank-2 { background-color: rgba(148, 163, 184, 0.1); border-color: rgba(148, 163, 184, 0.5); color: rgba(148, 163, 184, 1); }
+.rank-3 { background-color: rgba(234, 88, 12, 0.1); border-color: rgba(234, 88, 12, 0.5); color: rgba(234, 88, 12, 1); }
+.rank-default { background-color: rgba(38, 38, 38, 0.5); border-color: rgba(64, 64, 64, 0.5); color: #737373; }
+
+.roi-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 900;
+  border-width: 1px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.roi-up { background-color: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.2); }
+.roi-down { background-color: rgba(239, 68, 68, 0.1); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
+
+.shine-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine-effect::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 45%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 55%
+  );
+  transform: rotate(45deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) rotate(45deg); }
+}
